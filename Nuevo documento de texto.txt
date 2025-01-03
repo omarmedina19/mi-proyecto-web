@@ -1,0 +1,507 @@
+mira este es de la app.py
+# -*- coding: utf-8 -*-
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+import os
+import logging
+
+# Configuración de registros para depuración
+logging.basicConfig(level=logging.DEBUG)
+
+app = Flask(__name__)
+app.secret_key = 'clave_secreta'
+
+# Configuración de carpeta para subida de archivos
+UPLOAD_FOLDER = 'static/uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Simulación de base de datos para usuarios
+users_db = {}
+posts = []  # Lista global para almacenar las publicaciones
+
+# Ruta para la página principal (Inicio y Registro)
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        if not username or not email or not password:
+            flash('Todos los campos son obligatorios.', 'error')
+        elif username in users_db:
+            flash('El usuario ya existe.', 'error')
+        else:
+            users_db[username] = {
+                "email": email,
+                "password": password,
+                "profile_photo": None,
+                "cover_photo": None,
+                "bio": "",
+                "location": "",
+                "job": "",
+                "hobbies": "",
+                "phone": "",
+            }
+            flash('Registro exitoso. Ahora puedes iniciar sesión.', 'success')
+            return redirect(url_for('login'))
+    return render_template('home.html')
+
+# Ruta para Login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if not username or not password:
+            flash('Por favor, completa todos los campos.', 'error')
+        elif username in users_db and users_db[username]["password"] == password:
+            session['user'] = username
+            flash('Inicio de sesión exitoso.', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Usuario o contraseña incorrectos.', 'error')
+    return render_template('login.html')
+
+# Nueva página principal después de iniciar sesión
+@app.route('/dashboard', methods=['GET', 'POST'])
+def dashboard():
+    if 'user' not in session:
+        flash('Debes iniciar sesión para acceder al inicio.', 'error')
+        return redirect(url_for('login'))
+    user = session['user']
+    query = request.args.get('query')  # Para el buscador
+    filtered_posts = posts
+    if query:
+        filtered_posts = [post for post in posts if query.lower() in post['content'].lower()]
+    return render_template('dashboard.html', user=user, posts=filtered_posts)
+
+# Ruta para manejar publicaciones
+@app.route('/post', methods=['POST'])
+def post():
+    if 'user' not in session:
+        flash('Debes iniciar sesión para publicar.', 'error')
+        return redirect(url_for('login'))
+
+    user = session['user']
+    content = request.form.get('content')
+    photo = request.files.get('photo')
+
+    if not content and not photo:
+        flash('No puedes publicar contenido vacío.', 'error')
+        return redirect(url_for('dashboard'))
+
+    photo_filename = None
+    if photo and photo.filename != '':
+        photo_filename = f"{user}_{photo.filename}"
+        photo.save(os.path.join(app.config['UPLOAD_FOLDER'], photo_filename))
+
+    # Agregar la publicación
+    posts.append({'content': content, 'photo': photo_filename, 'user': user})
+    flash('¡Publicación realizada con éxito!', 'success')
+    return redirect(url_for('dashboard'))
+
+# Ruta para el Perfil
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if 'user' not in session:
+        flash('Debes iniciar sesión para acceder al perfil.', 'error')
+        return redirect(url_for('login'))
+    user = session['user']
+
+    if request.method == 'POST':
+        users_db[user]["bio"] = request.form.get('bio', users_db[user]["bio"])
+        users_db[user]["location"] = request.form.get('location', users_db[user]["location"])
+        users_db[user]["job"] = request.form.get('job', users_db[user]["job"])
+        users_db[user]["hobbies"] = request.form.get('hobbies', users_db[user]["hobbies"])
+        users_db[user]["phone"] = request.form.get('phone', users_db[user]["phone"])
+        flash('Información actualizada correctamente.', 'success')
+    
+    return render_template(
+        'profile.html',
+        user=user,
+        posts=posts,
+        user_info=users_db[user],
+        photo=users_db[user].get('profile_photo'),
+        cover_photo=users_db[user].get('cover_photo'),
+    )
+
+# Ruta para subir foto de portada
+@app.route('/upload_cover', methods=['POST'])
+def upload_cover():
+    if 'user' not in session:
+        flash('Debes iniciar sesión para subir una foto de portada.', 'error')
+        return redirect(url_for('login'))
+
+    user = session['user']
+    file = request.files.get('cover_photo')
+
+    if not file or file.filename == '':
+        flash('No se seleccionó ningún archivo.', 'error')
+        return redirect(url_for('profile'))
+
+    filename = f"{user}_cover_{file.filename}"
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    users_db[user]['cover_photo'] = filename
+    flash('Foto de portada actualizada.', 'success')
+    return redirect(url_for('profile'))
+
+# Ruta para cerrar sesión
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    flash('Has cerrado sesión correctamente.', 'success')
+    return redirect(url_for('home'))
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
+este de dashboard
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        /* Estilo adicional para centrado de íconos */
+        .icon-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px;
+            background-color: #4a148c;
+        }
+
+        .icon-bar i {
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .icon-bar i:hover {
+            color: #ffcc00;
+        }
+
+        /* Estilo para barra de publicación */
+        .post-area {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .post-area textarea {
+            flex: 1;
+            border: none;
+            resize: none;
+            padding: 10px;
+            margin-right: 10px;
+            font-size: 14px;
+            border-radius: 5px;
+        }
+
+        .post-area textarea:focus {
+            outline: none;
+            border: 1px solid #6a11cb;
+        }
+
+        .post-area .file-upload {
+            background-color: #6a11cb;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .post-area .file-upload i {
+            margin-right: 5px;
+        }
+
+        .post-area .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .post-area button {
+            background-color: #2575fc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .post-area button:hover {
+            background-color: #6a11cb;
+        }
+
+        /* Estilo para las publicaciones */
+        .post {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            background-color: white;
+        }
+
+        .post img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .post p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .preview {
+            margin-top: 10px;
+            max-width: 100%;
+            height: auto;
+            display: none;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 150px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a {
+            text-decoration: none;
+            color: black;
+            display: block;
+            padding: 5px 0;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+
+        .logout-option {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('image-preview');
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="icon-bar">
+            <i class="fas fa-user-plus" title="Solicitudes"></i>
+            <i class="fas fa-envelope" title="Mensajes"></i>
+            <i class="fas fa-bell" title="Notificaciones"></i>
+            <div class="dropdown" title="Ajustes">
+                <i class="fas fa-cogs"></i>
+                <div class="dropdown-content">
+                    <a href="{{ url_for('dashboard') }}">Inicio</a>
+                    <a href="{{ url_for('profile') }}">Perfil</a>
+                    <a href="{{ url_for('logout') }}" class="logout-option">Cerrar Sesión</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main style="max-width: 800px; margin: 0 auto; padding: 20px;">
+        <h1>Bienvenido, {{ user }}</h1>
+
+        <!-- Barra de publicación -->
+        <form action="{{ url_for('post') }}" method="POST" enctype="multipart/form-data" class="post-area">
+            <textarea name="content" placeholder="¿Qué estás pensando?" rows="1"></textarea>
+            <label class="file-upload">
+                <i class="fas fa-camera"></i> Subir imagen
+                <input type="file" name="photo" onchange="previewImage(this)">
+            </label>
+            <button type="submit">Publicar</button>
+        </form>
+        <img id="image-preview" class="preview" alt="Vista previa">
+
+        <!-- Mostrar publicaciones -->
+        <div>
+            <h2>Tus publicaciones</h2>
+            {% for post in posts %}
+            <div class="post">
+                {% if post['photo'] %}
+                <img src="{{ url_for('static', filename='uploads/' ~ post['photo']) }}" alt="Publicación">
+                {% endif %}
+                <p>{{ post['content'] }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>
+este de profile
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        .icon-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px;
+            background-color: #4a148c;
+        }
+
+        .icon-bar i {
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .icon-bar i:hover {
+            color: #ffcc00;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .cover-pic {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        .album {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .album img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .profile-info {
+            margin: 20px auto;
+            max-width: 600px;
+            text-align: left;
+        }
+
+        .profile-info label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .profile-info input, .profile-info textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .profile-info button {
+            margin-top: 20px;
+            background-color: #4a148c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .profile-info button:hover {
+            background-color: #6a11cb;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="icon-bar">
+            <i class="fas fa-home" title="Inicio" onclick="window.location.href='{{ url_for('dashboard') }}'"></i>
+            <i class="fas fa-cogs" title="Ajustes"></i>
+        </div>
+    </header>
+    <main>
+        <div class="profile-header">
+            <h1>Perfil de {{ user }}</h1>
+            {% if cover_photo %}
+                <img src="{{ url_for('static', filename='uploads/' ~ cover_photo) }}" alt="Foto de Portada" class="cover-pic">
+            {% endif %}
+            <form method="POST" action="{{ url_for('upload_cover') }}" enctype="multipart/form-data">
+                <label for="cover_photo">Subir Foto de Portada:</label>
+                <input type="file" id="cover_photo" name="cover_photo" accept="image/*">
+                <button type="submit">Subir</button>
+            </form>
+        </div>
+
+        <div class="profile-info">
+            <form method="POST" action="{{ url_for('profile') }}">
+                <label for="bio">Biografía</label>
+                <textarea id="bio" name="bio">{{ user_data.get('bio', '') }}</textarea>
+
+                <label for="birthday">Fecha de Nacimiento</label>
+                <input type="date" id="birthday" name="birthday" value="{{ user_data.get('birthday', '') }}">
+
+                <label for="location">Ciudad o Ubicación</label>
+                <input type="text" id="location" name="location" value="{{ user_data.get('location', '') }}">
+
+                <label for="job">Trabajo</label>
+                <input type="text" id="job" name="job" value="{{ user_data.get('job', '') }}">
+
+                <label for="hobbies">Pasatiempos</label>
+                <input type="text" id="hobbies" name="hobbies" value="{{ user_data.get('hobbies', '') }}">
+
+                <label for="phone">Teléfono</label>
+                <input type="text" id="phone" name="phone" value="{{ user_data.get('phone', '') }}">
+
+                <button type="submit">Actualizar Información</button>
+            </form>
+        </div>
+
+        <h2>Álbum de Fotos</h2>
+        <div class="album">
+            {% for post in posts %}
+                {% if post['photo'] %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ post['photo']) }}" alt="Publicación">
+                {% endif %}
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>
+aora recuerda no quitar nada oiste sino mejorar y añadir lo que te pedi que sea funcional

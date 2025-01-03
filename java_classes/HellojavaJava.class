@@ -1,0 +1,10 @@
+// coding: utf-8
+public class HelloJava {
+    public static void main(String[] args) {
+        if (args.length > 0) {
+            System.out.println("¡Hola desde Java, " + args[0] + "!");
+        } else {
+            System.out.println("¡Hola desde Java, usuario desconocido!");
+        }
+    }
+}
