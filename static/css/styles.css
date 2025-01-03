@@ -1,21 +1,31 @@
-/* Estilos existentes */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
     background: linear-gradient(135deg, #6a11cb, #2575fc);
     color: white;
+}
+
+.container.centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
     text-align: center;
 }
 
-.container {
-    margin-top: 100px;
+.omcat-logo {
+    font-family: 'Poppins', sans-serif;
+    font-size: 4rem;
+    font-weight: bold;
+    color: #2575fc; /* Color del botón de iniciar sesión */
+    margin-bottom: 5px;
 }
 
-.welcome-text {
-    font-family: 'Poppins', sans-serif;
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-    color: #fff;
+.corporation-text {
+    font-size: 1.2rem;
+    font-weight: normal;
+    color: #2575fc; /* Color del botón de iniciar sesión */
 }
 
 input, button {
@@ -25,7 +35,15 @@ input, button {
     font-size: 16px;
 }
 
-.btn {
+input {
+    width: 80%;
+    max-width: 400px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+button.btn {
     background-color: #2575fc;
     color: white;
     border: none;
@@ -34,40 +52,21 @@ input, button {
     cursor: pointer;
 }
 
-.btn:hover {
+button.btn:hover {
     background-color: #6a11cb;
 }
 
-/* Nuevos estilos */
-.nav-icons {
-    display: flex;
-    gap: 15px;
-    align-items: center;
+p {
+    margin-top: 20px;
+    font-size: 1rem;
 }
 
-.nav-icons a {
-    color: white;
-    text-decoration: none;
-    font-size: 20px;
-}
-
-.nav-icons a:hover {
+p a {
     color: #ffcc00;
+    text-decoration: none;
 }
 
-.popup {
-    position: absolute;
-    top: 50px;
-    right: 20px;
-    background: white;
-    color: black;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    display: none;
-    z-index: 1000;
+p a:hover {
+    text-decoration: underline;
 }
 
-.popup.active {
-    display: block;
-}

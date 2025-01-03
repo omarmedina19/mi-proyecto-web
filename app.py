@@ -112,18 +112,6 @@ def post():
     flash('¡Publicación realizada con éxito!', 'success')
     return redirect(url_for('dashboard'))
 
-@app.route('/profile', methods=['GET', 'POST'])
-def profile():
-    if 'user' not in session:
-        flash('Debes iniciar sesión para acceder al perfil.', 'error')
-        return redirect(url_for('login'))
-    user = session['user']
-
-    if request.method == 'POST':
-        users_db[user]["bio"] = request.form.get('bio', users_db[user]["bio"])
-        flash('Perfil actualizado.', 'success')
-    return render_template('profile.html', user=user, friends=users_db[user]['friends'])
-
 @app.route('/logout')
 def logout():
     session.pop('user', None)
@@ -133,4 +121,3 @@ def logout():
 if __name__ == '__main__':
     from os import environ
     app.run(host='0.0.0.0', port=int(environ.get('PORT', 5000)))
-

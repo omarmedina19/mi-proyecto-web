@@ -7,16 +7,18 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <header>
-        <h1>Bienvenido a nuestra p�gina</h1>
-        <nav>
-            <a href="{{ url_for('login') }}">Iniciar Sesi�n</a>
-            <a href="{{ url_for('register') }}">Registrarse</a>
-        </nav>
-    </header>
-    <main>
-        <h2>Descubre nuevas ideas y conecta con otros.</h2>
-        <p>Comparte tus pensamientos y encuentra amigos aqu�.</p>
-    </main>
+    <div class="container centered">
+        <div class="omcat-logo">OMKAT</div>
+        <div class="corporation-text">CORPORATION</div>
+        <div class="welcome-text">Bienvenidos a la página de Omar Medina</div>
+        <form action="{{ url_for('login') }}" method="POST">
+            <input type="text" name="username" placeholder="Nombre de usuario" required>
+            <input type="email" name="email" placeholder="Correo Electrónico" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <button class="btn" type="submit">Registrarse</button>
+        </form>
+        <p>¿Ya tienes cuenta? <a href="{{ url_for('login') }}">Inicia sesión aquí</a></p>
+    </div>
 </body>
 </html>
+

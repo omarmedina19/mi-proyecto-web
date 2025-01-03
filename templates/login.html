@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio de Sesión</title>
+    <title>Iniciar Sesión</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Iniciar Sesión</h1>
+    <div class="container centered">
+        <h1 class="omcat-logo">OMKAT</h1>
+        <p class="corporation-text">Bienvenidos a la página de Omar Medina</p>
         <form method="post">
             <input type="text" name="username" placeholder="Nombre de usuario" required>
             <input type="password" name="password" placeholder="Contraseña" required>
             <button type="submit" class="btn">Iniciar Sesión</button>
         </form>
+        <p>¿No tienes una cuenta? <a href="{{ url_for('home') }}">Regístrate aquí</a></p>
     </div>
 </body>
 </html>
