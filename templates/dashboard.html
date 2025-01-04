@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <header>
@@ -17,9 +17,8 @@
                 <div class="dropdown" title="Ajustes">
                     <i class="fas fa-cogs"></i>
                     <div class="dropdown-content">
-                        <a href="{{ url_for('dashboard') }}">Inicio</a>
                         <a href="{{ url_for('profile') }}">Perfil</a>
-                        <a href="{{ url_for('logout') }}" class="logout-option">Cerrar Sesión</a>
+                        <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
                     </div>
                 </div>
             </div>
@@ -30,14 +29,13 @@
         <div class="main-container">
             <div class="post-container">
                 <form action="{{ url_for('post') }}" method="POST" enctype="multipart/form-data" class="post-area">
-                    <textarea name="content" placeholder="¿Qué estás pensando?" rows="1" required></textarea>
+                    <textarea name="content" placeholder="¿Qué estás pensando?" rows="2" required></textarea>
                     <label class="file-upload">
                         <i class="fas fa-camera"></i> Subir imagen
                         <input type="file" name="photo" onchange="previewImage(this)">
                     </label>
                     <button type="submit">Publicar</button>
                 </form>
-                <img id="image-preview" class="preview" alt="Vista previa">
                 <div id="posts">
                     <h2>Tus publicaciones</h2>
                     {% for post in posts %}

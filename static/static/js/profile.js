@@ -1,3 +1,4 @@
+// Handle Dropdown Menu
 document.addEventListener('DOMContentLoaded', function () {
     const dropdown = document.querySelector('.dropdown');
     const dropdownContent = document.querySelector('.dropdown-content');
@@ -12,3 +13,4 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+

@@ -2,82 +2,45 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil</title>
+    <title>Perfil de Usuario</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <header>
-        <div class="icon-bar">
-            <i class="fas fa-home" title="Inicio" onclick="window.location.href='{{ url_for('dashboard') }}'"></i>
+        <div class="dashboard-header">
+            <span class="dashboard-logo">OMKAT</span>
+            <div class="icon-bar">
+                <i class="fas fa-user-plus" title="Solicitudes"></i>
+                <i class="fas fa-envelope" title="Mensajes"></i>
+                <i class="fas fa-bell" title="Notificaciones"></i>
+                <div class="dropdown" title="Ajustes">
+                    <i class="fas fa-cogs"></i>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('dashboard') }}">Inicio</a>
+                        <a href="{{ url_for('profile') }}">Perfil</a>
+                        <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
     <main>
-        <div class="profile-header">
-            <h1>Perfil de {{ user }}</h1>
-            {% if user_data.profile_photo %}
-                <img src="{{ url_for('static', filename='uploads/' ~ user_data.profile_photo) }}" alt="Foto de Perfil" class="profile-pic">
-            {% endif %}
-            <form method="POST" action="{{ url_for('profile') }}" enctype="multipart/form-data">
-                <label for="profile_photo">Cambiar Foto de Perfil:</label>
-                <input type="file" id="profile_photo" name="profile_photo">
-                <button type="submit">Actualizar</button>
-            </form>
-        </div>
-        <div class="tabs">
-            <button class="tab-link active" onclick="openTab(event, 'publications')">Publicaciones</button>
-            <button class="tab-link" onclick="openTab(event, 'data')">Datos</button>
-            <button class="tab-link" onclick="openTab(event, 'friends')">Amigos</button>
-        </div>
-        <div id="publications" class="tab-content active">
-            <h2>Publicaciones</h2>
-            Aquí puedes añadir publicaciones.
-        </div>
-        <div id="data" class="tab-content">
-            <h2>Datos</h2>
-            <form method="POST" action="{{ url_for('profile') }}">
-                <div class="input-group">
-                    <label for="bio">Biografía:</label>
-                    <input type="text" id="bio" name="bio" value="{{ user_data.bio }}">
-                </div>
-                <div class="input-group">
-                    <label for="birthday">Cumpleaños:</label>
-                    <input type="date" id="birthday" name="birthday" value="{{ user_data.birthday }}">
-                </div>
-                <div class="input-group">
-                    <label for="location">Ubicación:</label>
-                    <input type="text" id="location" name="location" value="{{ user_data.location }}">
-                </div>
-                <div class="input-group">
-                    <label for="job">Trabajo:</label>
-                    <input type="text" id="job" name="job" value="{{ user_data.job }}">
-                </div>
-                <button type="submit">Guardar Cambios</button>
-            </form>
-        </div>
-        <div id="friends" class="tab-content">
-            <h2>Amigos</h2>
-            <ul>
-                {% for friend in friends %}
-                <li>{{ friend }}</li>
-                {% endfor %}
-            </ul>
-        </div>
+        <h1>Perfil de {{ user }}</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <label for="profile_photo">Foto de perfil:</label>
+            <input type="file" name="profile_photo"><br>
+            <label for="bio">Biografía:</label>
+            <textarea name="bio">{{ user_data.bio }}</textarea><br>
+            <label for="birthday">Fecha de nacimiento:</label>
+            <input type="date" name="birthday" value="{{ user_data.birthday }}"><br>
+            <label for="location">Ubicación:</label>
+            <input type="text" name="location" value="{{ user_data.location }}"><br>
+            <label for="job">Trabajo:</label>
+            <input type="text" name="job" value="{{ user_data.job }}"><br>
+            <label for="hobbies">Pasatiempos:</label>
+            <input type="text" name="hobbies" value="{{ user_data.hobbies }}"><br>
+            <button type="submit">Actualizar perfil</button>
+        </form>
     </main>
 </body>
-<script>
-    function openTab(event, tabName) {
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-        }
-        tablinks = document.getElementsByClassName("tab-link");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-        }
-        document.getElementById(tabName).style.display = "block";
-        event.currentTarget.className += " active";
-    }
-</script>
 </html>
