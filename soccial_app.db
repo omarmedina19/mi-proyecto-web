@@ -1,0 +1,169 @@
+# -*- coding: utf-8 -*-
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+import os
+import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
+
+app = Flask(__name__)
+app.secret_key = 'clave_secreta'
+
+UPLOAD_FOLDER = 'static/uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Configuración de la base de datos
+DB_FILE = 'social_app.db'
+
+def get_db_connection():
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# Crear tablas si no existen
+with get_db_connection() as conn:
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            profile_photo TEXT,
+            cover_photo TEXT,
+            bio TEXT,
+            birthday TEXT,
+            location TEXT,
+            job TEXT,
+            hobbies TEXT
+        )
+    ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            content TEXT NOT NULL,
+            photo TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS likes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            post_id INTEGER NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(id),
+            FOREIGN KEY(post_id) REFERENCES posts(id)
+        )
+    ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS friends (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            friend_id INTEGER NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending',
+            FOREIGN KEY(user_id) REFERENCES users(id),
+            FOREIGN KEY(friend_id) REFERENCES users(id)
+        )
+    ''')
+    conn.commit()
+
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        if len(password) < 8:
+            flash('La contraseña debe tener al menos 8 caracteres.', 'error')
+        else:
+            try:
+                hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+                with get_db_connection() as conn:
+                    conn.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+                                 (username, email, hashed_password))
+                    conn.commit()
+                flash('Registro exitoso. Ahora puedes iniciar sesión.', 'success')
+                return redirect(url_for('login'))
+            except sqlite3.IntegrityError:
+                flash('El usuario o correo ya existe.', 'error')
+    return render_template('home.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        with get_db_connection() as conn:
+            user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+
+        if user and check_password_hash(user['password'], password):
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            flash('Inicio de sesión exitoso.', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Usuario o contraseña incorrectos.', 'error')
+    return render_template('login.html')
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+def dashboard():
+    if 'user_id' not in session:
+        flash('Debes iniciar sesión para acceder al inicio.', 'error')
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        content = request.form.get('content')
+        photo = request.files.get('photo')
+
+        photo_filename = None
+        if photo and photo.filename != '':
+            photo_filename = f"{session['username']}_{photo.filename}"
+            photo.save(os.path.join(app.config['UPLOAD_FOLDER'], photo_filename))
+
+        with get_db_connection() as conn:
+            conn.execute('INSERT INTO posts (user_id, content, photo) VALUES (?, ?, ?)',
+                         (session['user_id'], content, photo_filename))
+            conn.commit()
+        flash('Publicación realizada con éxito.', 'success')
+
+    with get_db_connection() as conn:
+        posts = conn.execute('''
+            SELECT posts.*, users.username, users.profile_photo
+            FROM posts
+            JOIN users ON posts.user_id = users.id
+            ORDER BY created_at DESC
+        ''').fetchall()
+
+    return render_template('dashboard.html', user=session['username'], posts=posts)
+
+@app.route('/like_post/<int:post_id>', methods=['POST'])
+def like_post(post_id):
+    if 'user_id' not in session:
+        return jsonify({'status': 'error', 'message': 'Debes iniciar sesión.'}), 403
+
+    with get_db_connection() as conn:
+        already_liked = conn.execute('SELECT * FROM likes WHERE user_id = ? AND post_id = ?',
+                                     (session['user_id'], post_id)).fetchone()
+        if already_liked:
+            conn.execute('DELETE FROM likes WHERE user_id = ? AND post_id = ?',
+                         (session['user_id'], post_id))
+            conn.commit()
+            return jsonify({'status': 'success', 'message': 'Me gusta eliminado.'})
+        else:
+            conn.execute('INSERT INTO likes (user_id, post_id) VALUES (?, ?)',
+                         (session['user_id'], post_id))
+            conn.commit()
+            return jsonify({'status': 'success', 'message': 'Me gusta agregado.'})
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    session.pop('username', None)
+    flash('Se ha cerrado sesión correctamente.', 'success')
+    return redirect(url_for('home'))
+
+if __name__ == '__main__':
+    app.run(debug=True)

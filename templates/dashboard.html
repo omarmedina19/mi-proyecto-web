@@ -2,65 +2,115 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | KAT</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
+    <!-- Encabezado -->
     <header>
-        <div class="dashboard-header">
-            <span class="dashboard-logo">OMKAT</span>
-            <div class="icon-bar">
-                <i class="fas fa-user-plus" title="Solicitudes"></i>
-                <i class="fas fa-envelope" title="Mensajes"></i>
-                <i class="fas fa-bell" title="Notificaciones"></i>
-                <div class="dropdown" title="Ajustes">
+        <div class="dashboard-header flex justify-between items-center bg-purple-600 text-white p-4">
+            <div class="logo text-2xl font-bold">KAT</div>
+            <div class="search-bar-header">
+                <form action="/search" method="get" class="flex items-center">
+                    <input type="text" name="query" placeholder="Buscar amigos..." class="search-input px-2 py-1 rounded" required />
+                    <button type="submit" class="bg-white text-purple-600 px-4 py-2 rounded ml-2">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="icon-bar flex items-center gap-4">
+                <!-- Ícono de mensajes con notificaciones -->
+                <a href="{{ url_for('message_list') }}" class="relative">
+                    <i class="fas fa-envelope" title="Mensajes"></i>
+                    {% if unread_messages_count > 0 %}
+                    <span class="notification bg-red-500 text-white px-2 py-1 rounded-full text-sm absolute top-0 right-0">
+                        {{ unread_messages_count }}
+                    </span>
+                    {% endif %}
+                </a>
+                <!-- Ícono de perfil -->
+                <i class="fas fa-user" title="Perfil" onclick="window.location.href='{{ url_for('profile') }}'"></i>
+                <!-- Menú de ajustes -->
+                <div class="dropdown relative" title="Ajustes">
                     <i class="fas fa-cogs"></i>
-                    <div class="dropdown-content">
-                        <a href="{{ url_for('profile') }}">Perfil</a>
-                        <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
+                    <div class="dropdown-content absolute right-0 bg-white text-black shadow-md rounded hidden">
+                        <a href="{{ url_for('profile') }}" class="block px-4 py-2 hover:bg-gray-200">Perfil</a>
+                        <a href="{{ url_for('logout') }}" class="block px-4 py-2 hover:bg-gray-200">Cerrar Sesión</a>
                     </div>
                 </div>
             </div>
         </div>
     </header>
-    <main style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-        <h1>Bienvenido, {{ user }}</h1>
-        <div class="main-container">
-            <div class="post-container">
-                <form action="{{ url_for('post') }}" method="POST" enctype="multipart/form-data" class="post-area">
-                    <textarea name="content" placeholder="¿Qué estás pensando?" rows="2" required></textarea>
-                    <label class="file-upload">
-                        <i class="fas fa-camera"></i> Subir imagen
-                        <input type="file" name="photo" onchange="previewImage(this)">
-                    </label>
-                    <button type="submit">Publicar</button>
+
+    <!-- Contenido principal -->
+    <main class="flex">
+        <!-- Barra lateral -->
+        <aside class="sidebar bg-gray-100 p-4 w-1/4">
+            <nav>
+                <ul>
+                    <li class="mb-4"><a href="{{ url_for('friends') }}" class="flex items-center"><i class="fas fa-users mr-2"></i> Amigos</a></li>
+                    <li class="mb-4"><a href="{{ url_for('message_list') }}" class="flex items-center"><i class="fas fa-envelope mr-2"></i> Mensajes</a></li>
+                    <li class="mb-4"><a href="{{ url_for('photos') }}" class="flex items-center"><i class="fas fa-photo-video mr-2"></i> Mis Fotos</a></li>
+                    <li class="mb-4"><a href="{{ url_for('events') }}" class="flex items-center"><i class="fas fa-calendar-alt mr-2"></i> Eventos</a></li>
+                    <li class="mb-4"><a href="{{ url_for('settings') }}" class="flex items-center"><i class="fas fa-cog mr-2"></i> Configuración</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Contenido de publicaciones -->
+        <section class="main-content flex-1 p-4">
+            <h1 class="text-3xl font-bold mb-6">Bienvenido, {{ user }}</h1>
+            <div class="post-container mb-6">
+                <h2 class="text-xl font-bold mb-4">Publicar algo nuevo</h2>
+                <form action="{{ url_for('dashboard') }}" method="POST" enctype="multipart/form-data" class="post-area bg-white p-4 rounded shadow-md">
+                    <textarea name="content" placeholder="¿Qué estás pensando?" class="w-full border rounded p-2 mb-4" required></textarea>
+                    <input type="file" name="photo" class="mb-4">
+                    <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded">Publicar</button>
                 </form>
-                <div id="posts">
-                    <h2>Tus publicaciones</h2>
-                    {% for post in posts %}
-                    <div class="post">
-                        {% if post['photo'] %}
-                        <img src="{{ url_for('static', filename='uploads/' ~ post['photo']) }}" alt="Publicación">
-                        {% endif %}
-                        <p>{{ post['content'] }}</p>
-                    </div>
-                    {% endfor %}
-                </div>
             </div>
-        </div>
+
+            <div id="posts">
+                <h2 class="text-xl font-bold mb-4">Publicaciones recientes</h2>
+                {% for post in posts %}
+                <div class="post bg-white border p-4 rounded-lg mb-4 shadow-md">
+                    <h3 class="text-lg font-bold mb-2">
+                        <a href="{{ url_for('view_user_profile', user_id=post['user_id']) }}" class="text-purple-600 hover:underline">
+                            {{ post['username'] }}
+                        </a>
+                    </h3>
+                    <p class="text-gray-700 mb-2">{{ post['content'] }}</p>
+                    {% if post['photo'] %}
+                    <img src="{{ url_for('static', filename='uploads/' + post['photo']) }}" alt="Publicación" class="w-full mt-2 rounded-lg">
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
     </main>
-</body>
-<script>
-    function previewImage(input) {
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById('image-preview').src = e.target.result;
-                document.getElementById('image-preview').style.display = 'block';
-            };
-            reader.readAsDataURL(input.files[0]);
+
+    <script>
+        // Mostrar notificaciones de mensajes
+        function toggleNotifications() {
+            alert('Abrir notificaciones: Esta funcionalidad estará disponible pronto.');
         }
-    }
-</script>
+
+        // Acciones en publicaciones
+        function likePost(postId) {
+            fetch(`/like_post/${postId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => alert(data.message))
+                .catch(error => console.error('Error:', error));
+        }
+
+        function commentPost(postId) {
+            alert(`Comentar en la publicación con ID: ${postId}`);
+        }
+
+        function sharePost(postId) {
+            alert(`Compartir la publicación con ID: ${postId}`);
+        }
+    </script>
+</body>
 </html>

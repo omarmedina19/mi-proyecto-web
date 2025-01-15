@@ -2,45 +2,108 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Perfil de Usuario</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil | KAT</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
-<body>
-    <header>
-        <div class="dashboard-header">
-            <span class="dashboard-logo">OMKAT</span>
-            <div class="icon-bar">
-                <i class="fas fa-user-plus" title="Solicitudes"></i>
-                <i class="fas fa-envelope" title="Mensajes"></i>
-                <i class="fas fa-bell" title="Notificaciones"></i>
-                <div class="dropdown" title="Ajustes">
-                    <i class="fas fa-cogs"></i>
-                    <div class="dropdown-content">
-                        <a href="{{ url_for('dashboard') }}">Inicio</a>
-                        <a href="{{ url_for('profile') }}">Perfil</a>
-                        <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
+<body class="bg-gray-200">
+    <!-- Encabezado -->
+    <header class="bg-purple-600 text-white p-4 flex justify-between items-center shadow-md">
+        <div class="text-2xl font-bold">KAT</div>
+        <nav class="flex gap-4">
+            <button class="hover:underline" onclick="window.location.href='/dashboard'">
+                <i class="fas fa-home"></i> Inicio
+            </button>
+            <button class="hover:underline" onclick="window.location.href='/friends'">
+                <i class="fas fa-user-friends"></i> Amigos
+            </button>
+            <button class="hover:underline" onclick="window.location.href='/messages'">
+                <i class="fas fa-envelope"></i> Mensajes
+            </button>
+            <button class="hover:underline" onclick="window.location.href='/settings'">
+                <i class="fas fa-cogs"></i> Configuración
+            </button>
+            <button class="hover:underline" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            </button>
+        </nav>
+        <form action="/search" method="get" class="flex items-center bg-white rounded p-2 shadow-md">
+            <input type="text" name="query" placeholder="Buscar usuarios..." class="border rounded p-2" required>
+            <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded ml-2">Buscar</button>
+        </form>        
+    </header>
+
+    <main class="container mx-auto mt-6">
+        <!-- Encabezado del perfil -->
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-6">
+            <div class="relative">
+                <img class="w-full h-48 object-cover" 
+                     src="{{ url_for('static', filename='uploads/' + (user['cover_photo'] if user['cover_photo'] else 'default_cover.jpg')) }}" 
+                     alt="Foto de portada">
+                <form class="absolute bottom-2 right-2" action="/update_cover_photo" method="POST" enctype="multipart/form-data">
+                    <label class="bg-purple-500 text-white px-4 py-2 rounded cursor-pointer">
+                        Cambiar portada
+                        <input type="file" name="cover_photo" class="hidden" onchange="this.form.submit()">
+                    </label>
+                </form>
+            </div>
+
+            <div class="p-6">
+                <div class="flex items-center gap-6">
+                    <div class="relative">
+                        <img class="w-24 h-24 rounded-full border-4 border-white shadow-md" 
+                             src="{{ url_for('static', filename='uploads/' + (user['profile_photo'] if user['profile_photo'] else 'default_profile.jpg')) }}" 
+                             alt="Foto de perfil">
+                        <form class="absolute bottom-0 right-0" action="/update_profile_photo" method="POST" enctype="multipart/form-data">
+                            <label class="bg-purple-500 text-white p-2 rounded-full cursor-pointer">
+                                <i class="fas fa-camera"></i>
+                                <input type="file" name="profile_photo" class="hidden" onchange="this.form.submit()">
+                            </label>
+                        </form>
+                    </div>
+
+                    <div>
+                        <h1 class="text-2xl font-bold text-purple-700">{{ user['username'] }}</h1>
+                        <p class="text-gray-600">{{ user['bio'] or 'Biografía no disponible' }}</p>
+                    
+                        <!-- Mostrar botón "Enviar Mensaje" sólo si NO es el perfil del usuario actual -->
+                        {% if user['id'] != session['user_id'] %}
+                        <form action="{{ url_for('message_list', user_id=user['id']) }}" method="GET">
+                            <button type="submit" class="bg-purple-500 text-white px-4 py-2 mt-2 rounded">Enviar Mensaje</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                                                        
+        <!-- Publicaciones -->
+        <section class="bg-white shadow-md rounded-lg p-6 mt-6">
+            <h2 class="text-xl font-bold mb-4 text-purple-700">Tus Publicaciones</h2>
+            <div class="mb-4">
+                <form action="/profile" method="POST" enctype="multipart/form-data">
+                    <textarea name="content" placeholder="Escribe algo..." class="w-full p-2 border rounded-lg mb-2"></textarea>
+                    <input type="file" name="photo" class="mb-2">
+                    <button type="submit" class="bg-purple-500 text-white px-4 py-2 rounded">Publicar</button>
+                </form>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+                {% for post in posts %}
+                <div class="border rounded-lg overflow-hidden shadow">
+                    {% if post['photo'] %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ post['photo']) }}" alt="Publicación" class="w-full">
+                    {% endif %}
+                    <div class="p-4">
+                        <p>{{ post['content'] }}</p>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-        </div>
-    </header>
-    <main>
-        <h1>Perfil de {{ user }}</h1>
-        <form method="POST" enctype="multipart/form-data">
-            <label for="profile_photo">Foto de perfil:</label>
-            <input type="file" name="profile_photo"><br>
-            <label for="bio">Biografía:</label>
-            <textarea name="bio">{{ user_data.bio }}</textarea><br>
-            <label for="birthday">Fecha de nacimiento:</label>
-            <input type="date" name="birthday" value="{{ user_data.birthday }}"><br>
-            <label for="location">Ubicación:</label>
-            <input type="text" name="location" value="{{ user_data.location }}"><br>
-            <label for="job">Trabajo:</label>
-            <input type="text" name="job" value="{{ user_data.job }}"><br>
-            <label for="hobbies">Pasatiempos:</label>
-            <input type="text" name="hobbies" value="{{ user_data.hobbies }}"><br>
-            <button type="submit">Actualizar perfil</button>
-        </form>
+        </section>
     </main>
+
+    <script>
+        function toggleEditForm() {
+            document.getElementById('edit-profile').classList.toggle('hidden');
+        }
+    </script>
 </body>
 </html>

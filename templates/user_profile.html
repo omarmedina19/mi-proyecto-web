@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de {{ user['username'] }} | KAT</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="bg-gray-200">
+    <header class="bg-purple-600 text-white p-4 flex justify-between items-center shadow-md">
+        <div class="text-2xl font-bold">KAT</div>
+        <nav class="flex gap-4">
+            <button class="hover:underline" onclick="window.location.href='/dashboard'">
+                <i class="fas fa-home"></i> Inicio
+            </button>
+            <button class="hover:underline" onclick="window.location.href='/friends'">
+                <i class="fas fa-user-friends"></i> Amigos
+            </button>
+            <button class="hover:underline" onclick="window.location.href='/messages'">
+                <i class="fas fa-envelope"></i> Mensajes
+            </button>
+            <button class="hover:underline" onclick="window.location.href='/settings'">
+                <i class="fas fa-cogs"></i> Configuración
+            </button>
+            <button class="hover:underline" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            </button>
+        </nav>
+    </header>
+
+    <main class="container mx-auto mt-6">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-6">
+            <div class="relative">
+                <img class="w-full h-48 object-cover" src="{{ url_for('static', filename='uploads/' + user['cover_photo']) }}" alt="Portada">
+            </div>
+            <div class="p-6">
+                <div class="flex items-center gap-6">
+                    <img class="w-24 h-24 rounded-full border-4 border-white shadow-md" src="{{ url_for('static', filename='uploads/' + user['profile_photo']) }}" alt="Foto de perfil">
+                    <div>
+                        <h1 class="text-2xl font-bold text-purple-700">{{ user['username'] }}</h1>
+                        <p class="text-gray-600">{{ user['bio'] or 'Biografía no disponible' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Publicaciones del Usuario -->
+        <section class="bg-white shadow-md rounded-lg p-6">
+            <h2 class="text-xl font-bold mb-4 text-purple-700">Publicaciones</h2>
+            <div class="grid grid-cols-3 gap-4">
+                {% for post in posts %}
+                <div class="border rounded-lg overflow-hidden shadow">
+                    {% if post['photo'] %}
+                    <img src="{{ url_for('static', filename='uploads/' + post['photo']) }}" alt="Publicación" class="w-full">
+                    {% endif %}
+                    <div class="p-4">
+                        <p>{{ post['content'] }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+</body>
+</html>

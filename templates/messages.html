@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat | KAT</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+        .bubble-sent {
+            background: #6a11cb;
+            color: white;
+            align-self: flex-end;
+        }
+        .bubble-received {
+            background: #f1f0f0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <header class="bg-white shadow-md p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-purple-700">KAT</h1>
+            <nav class="flex gap-4">
+                <button onclick="window.location.href='/messages'" class="text-purple-600 hover:underline">Volver a Mensajes</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto mt-8">
+        <section class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-purple-700 mb-6">Chat con {{ recipient['username'] }}</h2>
+
+            <!-- Historial de Chat -->
+            <div class="flex flex-col gap-2 max-h-96 overflow-y-auto mb-4">
+                {% for message in chat %}
+                <div class="flex {% if message['sender_id'] == session['user_id'] %}justify-end{% else %}justify-start{% endif %}">
+                    <div class="bubble {% if message['sender_id'] == session['user_id'] %}bubble-sent{% else %}bubble-received{% endif %}">
+                        <p class="text-sm">{{ message['message'] }}</p>
+                        <p class="text-xs text-gray-400 mt-2">{{ message['timestamp'] }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Enviar Mensaje -->
+            <form action="{{ url_for('chat_with_user', user_id=recipient['id']) }}" method="POST" class="bg-gray-50 p-4 rounded-lg shadow">
+                <textarea name="content" rows="3" class="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-purple-600" placeholder="Escribe tu mensaje..."></textarea>
+                <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                    Enviar
+                </button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

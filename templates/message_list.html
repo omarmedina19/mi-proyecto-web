@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mensajes | KAT</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Fondo degradado atractivo */
+        body {
+            background: linear-gradient(to bottom right, #6a11cb, #2575fc);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <header class="bg-white shadow-md p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-purple-700">KAT</h1>
+            <nav class="flex gap-4">
+                <button onclick="window.location.href='/dashboard'" class="text-purple-600 hover:underline">Inicio</button>
+                <button onclick="window.location.href='/profile'" class="text-purple-600 hover:underline">Perfil</button>
+                <button onclick="window.location.href='/logout'" class="text-purple-600 hover:underline">Cerrar Sesión</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto mt-8">
+        <section class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-purple-700 mb-4">Tus Mensajes</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for contact in contacts %}
+                <div class="bg-gray-100 rounded-lg shadow-lg p-4 hover:shadow-xl transition">
+                    <div class="flex items-center gap-4">
+                        <img 
+                            class="w-16 h-16 rounded-full border-2 border-purple-600"
+                            src="{{ url_for('static', filename='uploads/' + (contact['profile_photo'] or 'default_profile.jpg')) }}" 
+                            alt="Foto de perfil">
+                        <div>
+                            <h3 class="text-lg font-semibold">{{ contact['username'] }}</h3>
+                            <p class="text-gray-600 text-sm">{{ contact['last_message'] or 'No hay mensajes aún' }}</p>
+                            <a href="{{ url_for('chat_with_user', user_id=contact['contact_id']) }}" 
+                               class="text-purple-600 hover:underline font-semibold text-sm mt-2 block">
+                                Ver Chat →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+</body>
+</html>

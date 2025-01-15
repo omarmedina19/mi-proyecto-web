@@ -3,20 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio</title>
+    <title>Bienvenido a KAT</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: white;
+        }
+        form {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #2575fc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #6a11cb;
+        }
+        .switch {
+            margin-top: 10px;
+            color: white;
+            cursor: pointer;
+        }
+        .switch:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <div class="container centered">
-        <h1 class="omcat-logo">OMKAT</h1>
-        <p class="corporation-text">Bienvenidos a la página de Omar Medina</p>
-        <form method="post">
+    <div class="container">
+        <div class="logo">KAT</div>
+        {% if request.path == '/' %}
+        <!-- Formulario de Registro -->
+        <form action="{{ url_for('home') }}" method="POST">
+            <h3>Regístrate</h3>
             <input type="text" name="username" placeholder="Nombre de usuario" required>
-            <input type="email" name="email" placeholder="Correo Electrónico" required>
+            <input type="email" name="email" placeholder="Correo electrónico" required>
             <input type="password" name="password" placeholder="Contraseña" required>
-            <button type="submit" class="btn">Registrarse</button>
+            <button type="submit">Registrarse</button>
+            <div class="switch" onclick="window.location.href='{{ url_for('login') }}'">
+                ¿Ya tienes cuenta? Inicia sesión
+            </div>
         </form>
-        <p>¿Ya tienes cuenta? <a href="{{ url_for('login') }}">Inicia sesión aquí</a></p>
+        {% elif request.path == '/login' %}
+        <!-- Formulario de Inicio de Sesión -->
+        <form action="{{ url_for('login') }}" method="POST">
+            <h3>Inicia Sesión</h3>
+            <input type="text" name="username" placeholder="Nombre de usuario" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <button type="submit">Iniciar Sesión</button>
+            <div class="switch" onclick="window.location.href='{{ url_for('home') }}'">
+                ¿No tienes cuenta? Regístrate
+            </div>
+        </form>
+        {% endif %}
     </div>
 </body>
 </html>

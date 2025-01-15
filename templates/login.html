@@ -3,19 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión</title>
+    <title>Inicio de Sesión</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <div class="container centered">
+    <div class="home-container">
         <h1 class="omcat-logo">OMKAT</h1>
         <p class="corporation-text">Bienvenidos a la página de Omar Medina</p>
-        <form method="post">
-            <input type="text" name="username" placeholder="Nombre de usuario" required>
-            <input type="password" name="password" placeholder="Contraseña" required>
-            <button type="submit" class="btn">Iniciar Sesión</button>
-        </form>
-        <p>¿No tienes una cuenta? <a href="{{ url_for('home') }}">Regístrate aquí</a></p>
+        <div class="form-container">
+            <form method="post" action="{{ url_for('login') }}">
+                <input type="text" name="username" placeholder="Nombre de usuario" required>
+                <input type="password" name="password" placeholder="Contraseña" required>
+                <button type="submit" class="btn">Iniciar Sesión</button>
+            </form>
+            <p>¿No tienes cuenta? <a href="{{ url_for('home') }}">Regístrate aquí</a></p>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <p class="{{ category }}">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
     </div>
 </body>
 </html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold">Configuración</h1>
+        <a href="{{ url_for('dashboard') }}" class="text-white hover:underline">
+            Volver al Dashboard
+        </a>
+    </header>
+    <main class="container mx-auto mt-6">
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <h2 class="text-xl font-bold mb-4">Ajustes</h2>
+            <form method="POST" action="/settings">
+                <!-- Ejemplo de ajustes -->
+                <div class="mb-4">
+                    <label for="email_notifications" class="block font-semibold mb-2">Notificaciones por correo</label>
+                    <select id="email_notifications" name="email_notifications" class="w-full border rounded-lg p-2">
+                        <option value="enabled">Habilitadas</option>
+                        <option value="disabled">Deshabilitadas</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="privacy" class="block font-semibold mb-2">Privacidad</label>
+                    <select id="privacy" name="privacy" class="w-full border rounded-lg p-2">
+                        <option value="public">Público</option>
+                        <option value="private">Privado</option>
+                    </select>
+                </div>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
+                    Guardar Cambios
+                </button>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

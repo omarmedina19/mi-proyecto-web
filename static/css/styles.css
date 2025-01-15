@@ -1,3 +1,4 @@
+/* General */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -5,81 +6,28 @@ body {
     color: white;
 }
 
-.container.centered {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    text-align: center;
-}
-
-.omcat-logo {
-    font-family: 'Poppins', sans-serif;
-    font-size: 4rem;
-    font-weight: bold;
-    color: #2575fc;
-    margin-bottom: 5px;
-}
-
-.corporation-text {
-    font-size: 1.2rem;
-    font-weight: normal;
-    color: #2575fc;
-}
-
-input, button {
-    display: block;
-    margin: 10px auto;
-    padding: 10px;
-    font-size: 16px;
-}
-
-input {
-    width: 80%;
-    max-width: 400px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 10px;
-}
-
-button.btn {
-    background-color: #2575fc;
-    color: white;
-    border: none;
+/* Header */
+header {
+    background-color: #4a148c;
     padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button.btn:hover {
-    background-color: #6a11cb;
-}
-
-.dashboard-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #4a148c;
-    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.dashboard-logo {
-    font-family: 'Poppins', sans-serif;
-    font-size: 2rem;
+.logo {
+    font-size: 1.5rem;
     font-weight: bold;
-    color: white;
 }
 
 .icon-bar {
     display: flex;
-    gap: 20px;
-    align-items: center;
+    gap: 15px;
 }
 
 .icon-bar i {
-    font-size: 24px;
-    color: white;
+    font-size: 1.5rem;
     cursor: pointer;
 }
 
@@ -87,35 +35,158 @@ button.btn:hover {
     color: #ffcc00;
 }
 
-.post-area {
-    display: flex;
-    align-items: center;
-    background: white;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 20px;
+/* Main Container */
+main {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+.post-container {
+    margin-bottom: 30px;
 }
 
 .post-area textarea {
-    flex: 1;
+    width: 100%;
+    height: 80px;
     border: none;
-    resize: none;
-    padding: 10px;
-    margin-right: 10px;
-    font-size: 14px;
     border-radius: 5px;
+    padding: 10px;
+    font-size: 14px;
+    margin-bottom: 10px;
 }
 
-.post-area textarea:focus {
-    outline: none;
-    border: 1px solid #6a11cb;
+.post-area button {
+    background-color: #2575fc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.post-area button:hover {
+    background-color: #6a11cb;
 }
 
 .post {
-    border: 1px solid #ddd;
-    padding: 10px;
+    background: white;
+    color: black;
     border-radius: 5px;
+    padding: 15px;
     margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post img {
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+/* Notifications Dropdown */
+.notifications-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.notifications-dropdown-content {
+    display: none;
+    position: absolute;
     background-color: white;
     color: black;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 5px;
 }
+
+.notifications-dropdown-content a {
+    color: black;
+    padding: 10px 15px;
+    text-decoration: none;
+    display: block;
+}
+
+.notifications-dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.notifications-dropdown:hover .notifications-dropdown-content {
+    display: block;
+}
+
+/* Chat Button */
+.chat-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #6a11cb;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+.chat-button:hover {
+    background-color: #2575fc;
+}
+
+/* Chat Popup */
+.chat-popup {
+    display: none;
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: white;
+    color: black;
+    width: 300px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.chat-popup-header {
+    background-color: #4a148c;
+    color: white;
+    padding: 10px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    text-align: center;
+}
+
+.chat-popup-body {
+    padding: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.chat-popup-footer {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.chat-popup-footer input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.chat-popup-footer button {
+    background-color: #2575fc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.chat-popup-footer button:hover {
+    background-color: #6a11cb;
